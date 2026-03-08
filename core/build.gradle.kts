@@ -2,6 +2,7 @@ dependencies {
     api(libs.slf4j.api)
     implementation(libs.caffeine)
     implementation(libs.configurate.yaml)
+    implementation(libs.gson)
     implementation(libs.mineskin.client)
     implementation(libs.mineskin.client.jsoup)
     runtimeOnly(libs.sqlite.jdbc)
