@@ -1,6 +1,6 @@
 dependencies {
     implementation(project(":core"))
-    compileOnly(libs.adventure.text.minimessage)
+    implementation(libs.adventure.text.minimessage)
     compileOnly(libs.paper.api)
 }
 

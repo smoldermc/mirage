@@ -17,6 +17,7 @@ junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 minestom = { module = "net.minestom:minestom", version.ref = "minestom" }
+minestom-testing = { module = "net.minestom:testing", version.ref = "minestom" }
 mineskin-client = { module = "org.mineskin:java-client", version.ref = "mineskin" }
 mineskin-client-jsoup = { module = "org.mineskin:java-client-jsoup", version.ref = "mineskin" }
 paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }

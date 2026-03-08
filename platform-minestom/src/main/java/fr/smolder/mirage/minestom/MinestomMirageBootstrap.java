@@ -28,4 +28,8 @@ public final class MinestomMirageBootstrap {
             runtime.close();
         }
     }
+
+    MirageRuntime runtime() {
+        return runtime;
+    }
 }

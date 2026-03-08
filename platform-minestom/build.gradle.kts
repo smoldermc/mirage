@@ -1,11 +1,16 @@
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.api.tasks.JavaExec
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 
 dependencies {
     implementation(project(":core"))
-    compileOnly(libs.adventure.text.minimessage)
+    implementation(libs.adventure.text.minimessage)
     compileOnly(libs.minestom)
+
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.minestom.testing)
 }
 
 extensions.configure<JavaPluginExtension> {
@@ -14,4 +19,16 @@ extensions.configure<JavaPluginExtension> {
 
 tasks.withType<JavaCompile>().configureEach {
     options.release.set(25)
+}
+
+tasks.register<JavaExec>("runManualServer") {
+    group = "verification"
+    description = "Runs a barebones Minestom server with Mirage installed for manual in-game testing."
+    classpath = sourceSets.test.get().runtimeClasspath
+    mainClass.set("fr.smolder.mirage.minestom.MinestomManualTestServer")
+    workingDir = rootProject.projectDir
+
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(25))
+    })
 }
