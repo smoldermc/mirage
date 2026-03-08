@@ -1,0 +1,24 @@
+[versions]
+adventure = "4.26.1"
+caffeine = "3.2.2"
+configurate = "4.2.0"
+junit = "5.12.2"
+minestom = "2026.03.03-1.21.11"
+mineskin = "3.2.1-SNAPSHOT"
+paper = "1.21.11-R0.1-SNAPSHOT"
+slf4j = "2.0.17"
+sqlite = "3.50.3.0"
+
+[libraries]
+adventure-text-minimessage = { module = "net.kyori:adventure-text-minimessage", version.ref = "adventure" }
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+configurate-yaml = { module = "org.spongepowered:configurate-yaml", version.ref = "configurate" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+minestom = { module = "net.minestom:minestom", version.ref = "minestom" }
+mineskin-client = { module = "org.mineskin:java-client", version.ref = "mineskin" }
+mineskin-client-jsoup = { module = "org.mineskin:java-client-jsoup", version.ref = "mineskin" }
+paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite" }

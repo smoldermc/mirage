@@ -1,0 +1,15 @@
+settings:
+  mineskin_api_key: "YOUR_KEY_HERE"
+  database_type: "sqlite"
+  minimum_modern_protocol: 769
+
+images:
+  server_logo:
+    file: "logo.png"
+    shadow_color: "#00000000"
+
+motd:
+  default:
+    type: "image"
+    target_image: "server_logo"
+    fallback_text: "<red>Legacy clients see this!"
