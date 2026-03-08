@@ -47,17 +47,33 @@ public final class MirageRuntime implements AutoCloseable {
 
     public synchronized void reload() {
         try {
-            Files.createDirectories(platformAdapter.dataDirectory());
-            ensureDefaultConfig(platformAdapter.dataDirectory().resolve("config.yml"));
+            Path dataDirectory = platformAdapter.dataDirectory();
+            Path configPath = dataDirectory.resolve("config.yml");
+            Path cachePath = dataDirectory.resolve("mirage-cache.sqlite");
+            Files.createDirectories(dataDirectory);
+            ensureDefaultConfig(configPath);
+            platformAdapter.logger().info("Reloading Mirage from {}.", dataDirectory);
 
-            MirageConfig loadedConfig = configLoader.load(platformAdapter.dataDirectory().resolve("config.yml"));
+            MirageConfig loadedConfig = configLoader.load(configPath);
             closeCurrentResources();
 
             this.config = loadedConfig;
-            this.skinCache = new SqliteSkinCache(platformAdapter.dataDirectory().resolve("mirage-cache.sqlite"));
+            this.skinCache = new SqliteSkinCache(cachePath);
             this.mineskinClient = loadedConfig.settings().mineskinApiKey().isBlank()
                     ? new NoopMineskinClient()
-                    : new RealMineskinClient(loadedConfig.settings().mineskinApiKey());
+                    : new RealMineskinClient(
+                            loadedConfig.settings().mineskinApiKey(),
+                            loadedConfig.settings().mineskinSkinVisibility(),
+                            platformAdapter.logger()
+                    );
+            platformAdapter.logger().info(
+                    "Mirage config loaded: images={}, motds={}, modernProtocol>={}, mineskinApiKeyConfigured={}, mineskinVisibility={}.",
+                    loadedConfig.images().size(),
+                    loadedConfig.motds().size(),
+                    loadedConfig.settings().minimumModernProtocol(),
+                    !loadedConfig.settings().mineskinApiKey().isBlank(),
+                    loadedConfig.settings().mineskinSkinVisibility()
+            );
 
             MotdRenderService renderService = new MotdRenderService(
                     new SkinTileSlicer(),
@@ -75,7 +91,11 @@ public final class MirageRuntime implements AutoCloseable {
 
             renders.clear();
             renders.putAll(refreshed);
-            platformAdapter.logger().info("Mirage reload completed with {} MOTD definition(s).", refreshed.size());
+            platformAdapter.logger().info(
+                    "Mirage reload completed with {} MOTD definition(s): {}.",
+                    refreshed.size(),
+                    summarizeRenders(refreshed)
+            );
         } catch (Exception exception) {
             platformAdapter.logger().error("Mirage reload failed.", exception);
             renders.put(DEFAULT_MOTD_KEY, MotdRender.loading("Loading...", List.of()));
@@ -86,13 +106,28 @@ public final class MirageRuntime implements AutoCloseable {
         MirageConfig.MotdEntry motdEntry = config.motds().getOrDefault(key, config.motds().get(DEFAULT_MOTD_KEY));
         String fallbackText = motdEntry != null ? motdEntry.fallbackText() : "Mirage";
         if (!supportsModern(protocolVersion)) {
+            platformAdapter.logger().debug(
+                    "Serving fallback MOTD for key '{}' because client protocol {} is below {}.",
+                    key,
+                    protocolVersion,
+                    config.settings().minimumModernProtocol()
+            );
             return MotdRender.ready("", fallbackText);
         }
 
         MotdRender render = renders.get(key);
         if (render != null) {
+            if (render.state() == MotdRender.RenderState.LOADING) {
+                platformAdapter.logger().debug(
+                        "Serving loading MOTD for key '{}' with {} unresolved tile(s): {}.",
+                        key,
+                        render.missingTileHashes().size(),
+                        summarizeHashes(render.missingTileHashes())
+                );
+            }
             return render;
         }
+        platformAdapter.logger().warn("No MOTD render found for key '{}', serving default loading state.", key);
         return renders.getOrDefault(DEFAULT_MOTD_KEY, MotdRender.loading("Loading...", List.of()));
     }
 
@@ -111,6 +146,11 @@ public final class MirageRuntime implements AutoCloseable {
             MirageConfig.MotdEntry motdEntry
     ) throws IOException, InterruptedException {
         if (!"image".equalsIgnoreCase(motdEntry.type())) {
+            platformAdapter.logger().info(
+                    "MOTD '{}' is non-image type '{}', serving fallback text only.",
+                    motdEntry.targetImage(),
+                    motdEntry.type()
+            );
             return MotdRender.ready("", motdEntry.fallbackText());
         }
 
@@ -120,25 +160,72 @@ public final class MirageRuntime implements AutoCloseable {
             return MotdRender.ready("", motdEntry.fallbackText());
         }
 
-        BufferedImage image = loadImage(platformAdapter.dataDirectory().resolve(imageEntry.file()));
+        Path imagePath = platformAdapter.dataDirectory().resolve(imageEntry.file());
+        BufferedImage image = loadImage(imagePath);
+        platformAdapter.logger().info(
+                "Rendering MOTD image '{}' from {} ({}x{}).",
+                motdEntry.targetImage(),
+                imagePath,
+                image.getWidth(),
+                image.getHeight()
+        );
         List<TileSkin> missingTiles = renderService.missingTiles(image);
+        int totalTiles = renderService.slice(image).tiles().size();
+        int cachedTiles = totalTiles - missingTiles.size();
+        platformAdapter.logger().info(
+                "MOTD '{}' resolved {} cached tile(s) and {} missing tile(s) out of {}.",
+                motdEntry.targetImage(),
+                cachedTiles,
+                missingTiles.size(),
+                totalTiles
+        );
         if (!missingTiles.isEmpty()) {
             if (mineskinClient instanceof NoopMineskinClient) {
                 platformAdapter.logger().warn(
-                        "Mirage found {} uncached tile(s) for '{}' but no Mineskin API key is configured.",
+                        "Mirage found {} uncached tile(s) for '{}' but no Mineskin API key is configured. Missing hashes: {}.",
                         missingTiles.size(),
-                        imageEntry.file()
+                        imageEntry.file(),
+                        summarizeTileHashes(missingTiles)
                 );
                 return MotdRender.loading("Loading...", missingHashes(missingTiles));
             }
 
+            int index = 0;
             for (TileSkin tile : missingTiles) {
+                index++;
+                platformAdapter.logger().info(
+                        "Uploading missing tile {}/{} for '{}' ({})",
+                        index,
+                        missingTiles.size(),
+                        motdEntry.targetImage(),
+                        tile.tileHash()
+                );
                 SkinData skinData = mineskinClient.upload(tile.tileHash(), tile.skinImage());
                 skinCache.put(tile.tileHash(), skinData);
             }
+            platformAdapter.logger().info(
+                    "Finished uploading {} missing tile(s) for '{}'.",
+                    missingTiles.size(),
+                    motdEntry.targetImage()
+            );
         }
 
-        return renderService.render(image, motdEntry.fallbackText());
+        MotdRender render = renderService.render(image, motdEntry.fallbackText());
+        if (render.state() == MotdRender.RenderState.READY) {
+            platformAdapter.logger().info(
+                    "MOTD '{}' is ready with {} component tile(s).",
+                    motdEntry.targetImage(),
+                    totalTiles
+            );
+        } else {
+            platformAdapter.logger().warn(
+                    "MOTD '{}' is still loading with {} unresolved tile(s): {}.",
+                    motdEntry.targetImage(),
+                    render.missingTileHashes().size(),
+                    summarizeHashes(render.missingTileHashes())
+            );
+        }
+        return render;
     }
 
     private BufferedImage loadImage(Path imagePath) throws IOException {
@@ -185,5 +272,34 @@ public final class MirageRuntime implements AutoCloseable {
         }
         skinCache = new InMemorySkinCache();
         mineskinClient = new NoopMineskinClient();
+    }
+
+    private String summarizeRenders(Map<String, MotdRender> refreshed) {
+        List<String> parts = new ArrayList<>(refreshed.size());
+        for (var entry : refreshed.entrySet()) {
+            MotdRender render = entry.getValue();
+            parts.add(entry.getKey() + "=" + render.state() + "(" + render.missingTileHashes().size() + " missing)");
+        }
+        return String.join(", ", parts);
+    }
+
+    private String summarizeTileHashes(List<TileSkin> tiles) {
+        List<String> hashes = new ArrayList<>(tiles.size());
+        for (TileSkin tile : tiles) {
+            hashes.add(tile.tileHash());
+        }
+        return summarizeHashes(hashes);
+    }
+
+    private String summarizeHashes(List<String> hashes) {
+        if (hashes.isEmpty()) {
+            return "none";
+        }
+        int limit = Math.min(5, hashes.size());
+        String summary = String.join(", ", hashes.subList(0, limit));
+        if (hashes.size() > limit) {
+            return summary + " ... +" + (hashes.size() - limit) + " more";
+        }
+        return summary;
     }
 }

@@ -21,13 +21,18 @@ public record MirageConfig(
         motds.put("default", new MotdEntry("image", "server_logo", "<red>Legacy clients see this!"));
 
         return new MirageConfig(
-                new Settings("", "sqlite", 769),
+                new Settings("", "sqlite", 769, "unlisted"),
                 images,
                 motds
         );
     }
 
-    public record Settings(String mineskinApiKey, String databaseType, int minimumModernProtocol) {
+    public record Settings(
+            String mineskinApiKey,
+            String databaseType,
+            int minimumModernProtocol,
+            String mineskinSkinVisibility
+    ) {
     }
 
     public record ImageEntry(String file, String shadowColor) {

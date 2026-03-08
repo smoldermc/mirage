@@ -6,6 +6,7 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
 dependencies {
     implementation(project(":core"))
     implementation(libs.adventure.text.minimessage)
+    runtimeOnly(libs.slf4j.simple)
     compileOnly(libs.minestom)
 
     testImplementation(platform(libs.junit.bom))

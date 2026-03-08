@@ -19,6 +19,10 @@ public final class MinestomManualTestServer {
     }
 
     public static void main(String[] args) throws IOException {
+        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "info");
+        System.setProperty("org.slf4j.simpleLogger.showThreadName", "true");
+        System.setProperty("org.slf4j.simpleLogger.showDateTime", "true");
+
         Path dataDirectory = args.length > 0
                 ? Path.of(args[0]).toAbsolutePath()
                 : Path.of("run", "minestom-manual").toAbsolutePath();

@@ -22,4 +22,5 @@ mineskin-client = { module = "org.mineskin:java-client", version.ref = "mineskin
 mineskin-client-jsoup = { module = "org.mineskin:java-client-jsoup", version.ref = "mineskin" }
 paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite" }

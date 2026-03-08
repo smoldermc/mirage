@@ -16,9 +16,15 @@ public final class MinestomMirageBootstrap {
         MinestomMotdController motdController = new MinestomMotdController();
         motdController.install((key, protocolVersion) -> runtime.motd(key, protocolVersion));
         new MinestomCommandRegistrar().registerReloadCommand(
-                () -> platformAdapter.scheduler().executeAsync(runtime::reload)
+                () -> {
+                    System.out.println("[Mirage] Received reload request.");
+                    MinecraftServer.LOGGER.info("Received Mirage reload request.");
+                    platformAdapter.scheduler().executeAsync(runtime::reload);
+                }
         );
 
+        System.out.println("[Mirage] Scheduling initial reload.");
+        MinecraftServer.LOGGER.info("Scheduling initial Mirage reload.");
         platformAdapter.scheduler().executeAsync(runtime::reload);
         MinecraftServer.LOGGER.info("Mirage runtime installed for Minestom at {}", dataDirectory);
     }
@@ -26,6 +32,9 @@ public final class MinestomMirageBootstrap {
     public void close() {
         if (runtime != null) {
             runtime.close();
+        }
+        if (platformAdapter != null) {
+            platformAdapter.close();
         }
     }
 

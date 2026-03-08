@@ -25,7 +25,8 @@ public final class ConfigLoader {
         MirageConfig.Settings settings = new MirageConfig.Settings(
                 settingsNode.node("mineskin_api_key").getString(""),
                 settingsNode.node("database_type").getString("sqlite"),
-                settingsNode.node("minimum_modern_protocol").getInt(769)
+                settingsNode.node("minimum_modern_protocol").getInt(769),
+                settingsNode.node("mineskin_skin_visibility").getString("unlisted")
         );
 
         Map<String, MirageConfig.ImageEntry> images = new LinkedHashMap<>();

@@ -8,20 +8,24 @@ import org.slf4j.Logger;
 
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class MinestomPlatformAdapter implements PlatformAdapter {
     private final Path dataDirectory;
+    private final ExecutorService asyncExecutor = Executors.newSingleThreadExecutor(daemonFactory("mirage-minestom-async"));
     private final MirageScheduler scheduler = new MirageScheduler() {
         @Override
         public void executeAsync(Runnable task) {
-            CompletableFuture.runAsync(task);
+            asyncExecutor.execute(wrap(task, "async"));
         }
 
         @Override
         public void schedule(Duration delay, Runnable task) {
             MinecraftServer.getSchedulerManager()
-                    .buildTask(task)
+                    .buildTask(wrap(task, "scheduled"))
                     .delay(TaskSchedule.duration(delay))
                     .schedule();
         }
@@ -44,5 +48,32 @@ public final class MinestomPlatformAdapter implements PlatformAdapter {
     @Override
     public Path dataDirectory() {
         return dataDirectory;
+    }
+
+    public void close() {
+        asyncExecutor.shutdownNow();
+    }
+
+    private Runnable wrap(Runnable task, String source) {
+        return () -> {
+            try {
+                System.out.println("[Mirage] Running " + source + " task.");
+                logger().info("Running Mirage {} task.", source);
+                task.run();
+            } catch (Throwable throwable) {
+                System.err.println("[Mirage] " + source + " task failed: " + throwable.getMessage());
+                throwable.printStackTrace(System.err);
+                logger().error("Mirage {} task failed.", source, throwable);
+            }
+        };
+    }
+
+    private static ThreadFactory daemonFactory(String prefix) {
+        AtomicInteger counter = new AtomicInteger();
+        return runnable -> {
+            Thread thread = new Thread(runnable, prefix + "-" + counter.incrementAndGet());
+            thread.setDaemon(true);
+            return thread;
+        };
     }
 }
