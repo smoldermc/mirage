@@ -4,7 +4,7 @@ import fr.smolder.mirage.core.model.MotdRender;
 import fr.smolder.mirage.core.model.RenderedSkin;
 import fr.smolder.mirage.core.port.MotdController;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.object.ObjectContents;
 import net.minestom.server.MinecraftServer;
@@ -21,6 +21,8 @@ public final class MinestomMotdController implements MotdController {
     private static final String DEFAULT_MOTD_KEY = "default";
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
     private static final UUID EMPTY_PROFILE_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+    private static final int DEFAULT_TEXT_ARGB = 0xFFFFFFFF;
+    private static final int DEFAULT_SHADOW_ARGB = 0xFFFFFFFF;
 
     @Override
     public void install(MotdResolver resolver) {
@@ -36,6 +38,8 @@ public final class MinestomMotdController implements MotdController {
 
     private Component toComponent(MotdRender render) {
         if (render.state() == MotdRender.RenderState.READY && !render.orderedSkins().isEmpty()) {
+            TextColor textColor = parseTextColor(render.textColor());
+            AlphaColor shadowColor = parseShadowColor(render.shadowColor());
             Component result = Component.empty();
             for (int index = 0; index < render.orderedSkins().size(); index++) {
                 result = result.append(toPlayerHead(render.orderedSkins().get(index)));
@@ -43,7 +47,9 @@ public final class MinestomMotdController implements MotdController {
                     result = result.append(Component.text("\n"));
                 }
             }
-            return result;
+            return result
+                    .color(textColor)
+                    .shadowColor(shadowColor);
         }
         return MINI_MESSAGE.deserialize(render.fallbackText());
     }
@@ -65,8 +71,41 @@ public final class MinestomMotdController implements MotdController {
                 .profileProperty(property)
                 .skin(profile)
                 .hat(renderedSkin.hat())
-                .build())
-                .color(NamedTextColor.WHITE)
-                .shadowColor(new AlphaColor(255, 255, 255, 255));
+                .build());
     }
+
+    private static TextColor parseTextColor(String configuredColor) {
+        int argb = parseArgb(configuredColor, DEFAULT_TEXT_ARGB);
+        return TextColor.color((argb >>> 16) & 0xFF, (argb >>> 8) & 0xFF, argb & 0xFF);
+    }
+
+    private static AlphaColor parseShadowColor(String configuredColor) {
+        int argb = parseArgb(configuredColor, DEFAULT_SHADOW_ARGB);
+        return new AlphaColor(
+                (argb >>> 16) & 0xFF,
+                (argb >>> 8) & 0xFF,
+                argb & 0xFF,
+                (argb >>> 24) & 0xFF
+        );
+    }
+
+    private static int parseArgb(String configuredColor, int fallbackArgb) {
+        if (configuredColor == null) {
+            return fallbackArgb;
+        }
+
+        String hex = configuredColor.startsWith("#") ? configuredColor.substring(1) : configuredColor;
+        try {
+            if (hex.length() == 6) {
+                return 0xFF000000 | Integer.parseUnsignedInt(hex, 16);
+            }
+            if (hex.length() == 8) {
+                return (int) Long.parseLong(hex, 16);
+            }
+        } catch (NumberFormatException ignored) {
+            return fallbackArgb;
+        }
+        return fallbackArgb;
+    }
+
 }

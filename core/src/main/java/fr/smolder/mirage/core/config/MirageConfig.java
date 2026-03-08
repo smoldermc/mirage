@@ -15,7 +15,7 @@ public record MirageConfig(
 
     public static MirageConfig defaults() {
         Map<String, ImageEntry> images = new LinkedHashMap<>();
-        images.put("server_logo", new ImageEntry("logo.png", "#00000000"));
+        images.put("server_logo", new ImageEntry("logo.png", "#FFFFFF", "#FFFFFFFF"));
 
         Map<String, MotdEntry> motds = new LinkedHashMap<>();
         motds.put("default", new MotdEntry("image", "server_logo", "<red>Legacy clients see this!"));
@@ -35,7 +35,7 @@ public record MirageConfig(
     ) {
     }
 
-    public record ImageEntry(String file, String shadowColor) {
+    public record ImageEntry(String file, String textColor, String shadowColor) {
     }
 
     public record MotdEntry(String type, String targetImage, String fallbackText) {

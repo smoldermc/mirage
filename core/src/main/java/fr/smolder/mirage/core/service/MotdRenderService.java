@@ -54,7 +54,7 @@ public final class MotdRenderService {
         skinCache.put(tileHash, skinData);
     }
 
-    public MotdRender render(BufferedImage image, String fallbackText) {
+    public MotdRender render(BufferedImage image, String fallbackText, String textColor, String shadowColor) {
         SlicedImage slicedImage = imageSlicer.slice(image);
         Map<String, SkinData> resolved = new LinkedHashMap<>();
         Set<String> missing = new LinkedHashSet<>();
@@ -67,7 +67,7 @@ public final class MotdRenderService {
         }
 
         if (!missing.isEmpty()) {
-            return MotdRender.loading("Loading...", List.copyOf(missing));
+            return MotdRender.loading("Loading...", List.copyOf(missing), textColor, shadowColor);
         }
 
         List<RenderedSkin> orderedSkins = new ArrayList<>(slicedImage.tiles().size());
@@ -78,7 +78,9 @@ public final class MotdRenderService {
                 jsonGenerator.generate(slicedImage, resolved),
                 fallbackText,
                 slicedImage.columns(),
-                orderedSkins
+                orderedSkins,
+                textColor,
+                shadowColor
         );
     }
 }

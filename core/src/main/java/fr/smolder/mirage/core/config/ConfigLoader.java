@@ -35,7 +35,8 @@ public final class ConfigLoader {
             CommentedConfigurationNode node = child.getValue();
             images.put(key, new MirageConfig.ImageEntry(
                     node.node("file").getString(""),
-                    node.node("shadow_color").getString("#00000000")
+                    node.node("text_color").getString("#FFFFFF"),
+                    node.node("shadow_color").getString("#FFFFFFFF")
             ));
         }
 

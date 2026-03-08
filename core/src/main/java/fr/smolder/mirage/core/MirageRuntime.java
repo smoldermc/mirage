@@ -187,7 +187,12 @@ public final class MirageRuntime implements AutoCloseable {
                         imageEntry.file(),
                         summarizeTileHashes(missingTiles)
                 );
-                return MotdRender.loading("Loading...", missingHashes(missingTiles));
+                return MotdRender.loading(
+                        "Loading...",
+                        missingHashes(missingTiles),
+                        imageEntry.textColor(),
+                        imageEntry.shadowColor()
+                );
             }
 
             int index = 0;
@@ -210,7 +215,12 @@ public final class MirageRuntime implements AutoCloseable {
             );
         }
 
-        MotdRender render = renderService.render(image, motdEntry.fallbackText());
+        MotdRender render = renderService.render(
+                image,
+                motdEntry.fallbackText(),
+                imageEntry.textColor(),
+                imageEntry.shadowColor()
+        );
         if (render.state() == MotdRender.RenderState.READY) {
             platformAdapter.logger().info(
                     "MOTD '{}' is ready with {} component tile(s).",
