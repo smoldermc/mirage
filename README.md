@@ -70,6 +70,7 @@ motd:
 Notes:
 
 - image dimensions must be divisible by `8`
+- maximum banner size is `264x16` (`264` width, `16` height)
 - modern MOTD rendering is only served to clients at or above `minimum_modern_protocol`
 - rendered skin data is cached in SQLite
 
