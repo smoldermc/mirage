@@ -7,11 +7,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Objects;
+
 public final class SpigotCommandRegistrar implements CommandRegistrar {
     private final JavaPlugin plugin;
 
     public SpigotCommandRegistrar(JavaPlugin plugin) {
-        this.plugin = plugin;
+        this.plugin = Objects.requireNonNull(plugin, "plugin");
     }
 
     @Override

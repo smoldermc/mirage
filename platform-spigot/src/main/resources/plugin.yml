@@ -8,3 +8,8 @@ commands:
   mirage:
     description: Reload Mirage state
     usage: /mirage
+    permission: mirage.command.reload
+permissions:
+  mirage.command.reload:
+    description: Allows reloading Mirage using /mirage
+    default: op

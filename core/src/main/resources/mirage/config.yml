@@ -1,7 +1,7 @@
 settings:
   mineskin_api_key: "YOUR_KEY_HERE"
   database_type: "sqlite"
-  minimum_modern_protocol: 769
+  minimum_modern_protocol: 773
   mineskin_skin_visibility: "unlisted" # public, unlisted, or private
 
 images:

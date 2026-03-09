@@ -47,7 +47,7 @@ settings:
   mineskin_api_key: "YOUR_KEY_HERE"
   database_type: "sqlite"
   minimum_modern_protocol: 769
-  mineskin_skin_visibility: "unlisted"
+  mineskin_skin_visibility: "unlisted" # public, unlisted, or private
 
 images:
   server_logo:
@@ -55,7 +55,8 @@ images:
     text_color: "#FFFFFF"
     shadow_color: "#FFFFFFFF"
     # line_styles:
-    #   - shadow_color: "#FF0000FF"
+    #   - shadow_color: "#FF0000FF" # line 1 override
+    #   - text_color: "#00FF00"     # line 2 override
 
 motd:
   default:
@@ -88,4 +89,19 @@ Publish locally:
 
 ```powershell
 ./gradlew publishToMavenLocal
+```
+
+## Command Execution Provider
+
+Minestom installation with a custom provider:
+
+```java
+MinestomMirageBootstrap bootstrap = new MinestomMirageBootstrap();
+bootstrap.install(dataDirectory, sender -> /* your logic */ true);
+```
+
+Spigot uses standard command permissions via `plugin.yml`:
+
+```java
+mirage.command.reload
 ```

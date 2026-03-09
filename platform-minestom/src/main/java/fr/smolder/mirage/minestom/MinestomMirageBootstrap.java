@@ -1,21 +1,28 @@
 package fr.smolder.mirage.minestom;
 
 import fr.smolder.mirage.core.MirageRuntime;
+import fr.smolder.mirage.core.port.PermissionProvider;
 import net.minestom.server.MinecraftServer;
 
 import java.nio.file.Path;
+import java.util.Objects;
 
 public final class MinestomMirageBootstrap {
     private MirageRuntime runtime;
     private MinestomPlatformAdapter platformAdapter;
 
     public void install(Path dataDirectory) {
+        install(dataDirectory, PermissionProvider.allowAll());
+    }
+
+    public void install(Path dataDirectory, PermissionProvider permissionProvider) {
+        Objects.requireNonNull(permissionProvider, "permissionProvider");
         this.platformAdapter = new MinestomPlatformAdapter(dataDirectory);
         this.runtime = new MirageRuntime(platformAdapter);
 
         MinestomMotdController motdController = new MinestomMotdController();
         motdController.install((key, protocolVersion) -> runtime.motd(key, protocolVersion));
-        new MinestomCommandRegistrar().registerReloadCommand(
+        new MinestomCommandRegistrar(permissionProvider).registerReloadCommand(
                 () -> {
                     System.out.println("[Mirage] Received reload request.");
                     MinecraftServer.LOGGER.info("Received Mirage reload request.");
