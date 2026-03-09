@@ -13,6 +13,7 @@ Repository:
 ```kotlin
 repositories {
     maven("https://repo.smolder.fr/public/")
+    maven("https://repo.inventivetalent.org/repository/public/") // Needed for the MineSkin client
 }
 ```
 
