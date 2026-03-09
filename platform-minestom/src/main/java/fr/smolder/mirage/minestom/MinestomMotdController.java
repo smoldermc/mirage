@@ -18,98 +18,98 @@ import java.util.List;
 import java.util.UUID;
 
 public final class MinestomMotdController implements MotdController {
-    private static final String DEFAULT_MOTD_KEY = "default";
-    private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
-    private static final UUID EMPTY_PROFILE_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
-    private static final int DEFAULT_TEXT_ARGB = 0xFFFFFFFF;
-    private static final int DEFAULT_SHADOW_ARGB = 0xFFFFFFFF;
+	private static final String DEFAULT_MOTD_KEY = "default";
+	private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
+	private static final UUID EMPTY_PROFILE_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+	private static final int DEFAULT_TEXT_ARGB = 0xFFFFFFFF;
+	private static final int DEFAULT_SHADOW_ARGB = 0xFFFFFFFF;
 
-    @Override
-    public void install(MotdResolver resolver) {
-        MinecraftServer.getGlobalEventHandler().addListener(ServerListPingEvent.class, event -> {
-            int protocolVersion = event.getConnection() != null ? event.getConnection().getProtocolVersion() : -1;
-            MotdRender render = resolver.resolve(DEFAULT_MOTD_KEY, protocolVersion);
-            Status updatedStatus = Status.builder(event.getStatus())
-                    .description(toComponent(render))
-                    .build();
-            event.setStatus(updatedStatus);
-        });
-    }
+	@Override
+	public void install(MotdResolver resolver) {
+		MinecraftServer.getGlobalEventHandler().addListener(ServerListPingEvent.class, event -> {
+			int protocolVersion = event.getConnection() != null ? event.getConnection().getProtocolVersion() : -1;
+			MotdRender render = resolver.resolve(DEFAULT_MOTD_KEY, protocolVersion);
+			Status updatedStatus = Status.builder(event.getStatus())
+					.description(toComponent(render))
+					.build();
+			event.setStatus(updatedStatus);
+		});
+	}
 
-    private Component toComponent(MotdRender render) {
-        if (render.state() == MotdRender.RenderState.READY && !render.orderedSkins().isEmpty()) {
-            Component result = Component.empty();
-            int rows = (render.orderedSkins().size() + render.columns() - 1) / render.columns();
-            for (int row = 0; row < rows; row++) {
-                MotdRender.LineStyle lineStyle = row < render.lineStyles().size()
-                        ? render.lineStyles().get(row)
-                        : new MotdRender.LineStyle("#FFFFFF", "#FFFFFFFF");
-                Component line = Component.empty();
-                int start = row * render.columns();
-                int end = Math.min(start + render.columns(), render.orderedSkins().size());
-                for (int index = start; index < end; index++) {
-                    line = line.append(toPlayerHead(render.orderedSkins().get(index)));
-                }
-                result = result.append(line
-                        .color(parseTextColor(lineStyle.textColor()))
-                        .shadowColor(parseShadowColor(lineStyle.shadowColor())));
-                if (row + 1 < rows) {
-                    result = result.append(Component.text("\n"));
-                }
-            }
-            return result;
-        }
-        return MINI_MESSAGE.deserialize(render.fallbackText());
-    }
+	private Component toComponent(MotdRender render) {
+		if (render.state() == MotdRender.RenderState.READY && !render.orderedSkins().isEmpty()) {
+			Component result = Component.empty();
+			int rows = (render.orderedSkins().size() + render.columns() - 1) / render.columns();
+			for (int row = 0; row < rows; row++) {
+				MotdRender.LineStyle lineStyle = row < render.lineStyles().size()
+						? render.lineStyles().get(row)
+						: new MotdRender.LineStyle("#FFFFFF", "#FFFFFFFF");
+				Component line = Component.empty();
+				int start = row * render.columns();
+				int end = Math.min(start + render.columns(), render.orderedSkins().size());
+				for (int index = start; index < end; index++) {
+					line = line.append(toPlayerHead(render.orderedSkins().get(index)));
+				}
+				result = result.append(line
+						.color(parseTextColor(lineStyle.textColor()))
+						.shadowColor(parseShadowColor(lineStyle.shadowColor())));
+				if (row + 1 < rows) {
+					result = result.append(Component.text("\n"));
+				}
+			}
+			return result;
+		}
+		return MINI_MESSAGE.deserialize(render.fallbackText());
+	}
 
-    private Component toPlayerHead(RenderedSkin renderedSkin) {
-        var skinData = renderedSkin.skinData();
-        GameProfile.Property property = new GameProfile.Property("textures", skinData.textureBase64());
-        ResolvableProfile profile = new ResolvableProfile(new ResolvableProfile.Partial(
-                null,
-                EMPTY_PROFILE_ID,
-                List.of(property)
-        ));
-        return Component.object(ObjectContents.playerHead()
-                .id(EMPTY_PROFILE_ID)
-                .profileProperty(property)
-                .skin(profile)
-                .hat(renderedSkin.hat())
-                .build());
-    }
+	private Component toPlayerHead(RenderedSkin renderedSkin) {
+		var skinData = renderedSkin.skinData();
+		GameProfile.Property property = new GameProfile.Property("textures", skinData.textureBase64());
+		ResolvableProfile profile = new ResolvableProfile(new ResolvableProfile.Partial(
+				null,
+				EMPTY_PROFILE_ID,
+				List.of(property)
+		));
+		return Component.object(ObjectContents.playerHead()
+				.id(EMPTY_PROFILE_ID)
+				.profileProperty(property)
+				.skin(profile)
+				.hat(renderedSkin.hat())
+				.build());
+	}
 
-    private static TextColor parseTextColor(String configuredColor) {
-        int argb = parseArgb(configuredColor, DEFAULT_TEXT_ARGB);
-        return TextColor.color((argb >>> 16) & 0xFF, (argb >>> 8) & 0xFF, argb & 0xFF);
-    }
+	private static TextColor parseTextColor(String configuredColor) {
+		int argb = parseArgb(configuredColor, DEFAULT_TEXT_ARGB);
+		return TextColor.color((argb >>> 16) & 0xFF, (argb >>> 8) & 0xFF, argb & 0xFF);
+	}
 
-    private static AlphaColor parseShadowColor(String configuredColor) {
-        int argb = parseArgb(configuredColor, DEFAULT_SHADOW_ARGB);
-        return new AlphaColor(
-                (argb >>> 16) & 0xFF,
-                (argb >>> 8) & 0xFF,
-                argb & 0xFF,
-                (argb >>> 24) & 0xFF
-        );
-    }
+	private static AlphaColor parseShadowColor(String configuredColor) {
+		int argb = parseArgb(configuredColor, DEFAULT_SHADOW_ARGB);
+		return new AlphaColor(
+				(argb >>> 16) & 0xFF,
+				(argb >>> 8) & 0xFF,
+				argb & 0xFF,
+				(argb >>> 24) & 0xFF
+		);
+	}
 
-    private static int parseArgb(String configuredColor, int fallbackArgb) {
-        if (configuredColor == null) {
-            return fallbackArgb;
-        }
+	private static int parseArgb(String configuredColor, int fallbackArgb) {
+		if (configuredColor == null) {
+			return fallbackArgb;
+		}
 
-        String hex = configuredColor.startsWith("#") ? configuredColor.substring(1) : configuredColor;
-        try {
-            if (hex.length() == 6) {
-                return 0xFF000000 | Integer.parseUnsignedInt(hex, 16);
-            }
-            if (hex.length() == 8) {
-                return (int) Long.parseLong(hex, 16);
-            }
-        } catch (NumberFormatException ignored) {
-            return fallbackArgb;
-        }
-        return fallbackArgb;
-    }
+		String hex = configuredColor.startsWith("#") ? configuredColor.substring(1) : configuredColor;
+		try {
+			if (hex.length() == 6) {
+				return 0xFF000000 | Integer.parseUnsignedInt(hex, 16);
+			}
+			if (hex.length() == 8) {
+				return (int) Long.parseLong(hex, 16);
+			}
+		} catch (NumberFormatException ignored) {
+			return fallbackArgb;
+		}
+		return fallbackArgb;
+	}
 
 }

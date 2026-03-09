@@ -5,5 +5,5 @@ import fr.smolder.mirage.core.model.SlicedImage;
 import java.awt.image.BufferedImage;
 
 public interface ImageSlicer {
-    SlicedImage slice(BufferedImage image);
+	SlicedImage slice(BufferedImage image);
 }

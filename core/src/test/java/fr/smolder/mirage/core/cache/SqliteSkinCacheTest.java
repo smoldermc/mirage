@@ -10,22 +10,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SqliteSkinCacheTest {
-    @TempDir
-    Path tempDir;
+	@TempDir
+	Path tempDir;
 
-    @Test
-    void persistsSkinDataAcrossCacheInstances() throws Exception {
-        Path databasePath = tempDir.resolve("mirage-cache.sqlite");
+	@Test
+	void persistsSkinDataAcrossCacheInstances() throws Exception {
+		Path databasePath = tempDir.resolve("mirage-cache.sqlite");
 
-        try (SqliteSkinCache firstCache = new SqliteSkinCache(databasePath)) {
-            firstCache.put("tile-a", new SkinData("texture-value", "signature-value"));
-        }
+		try (SqliteSkinCache firstCache = new SqliteSkinCache(databasePath)) {
+			firstCache.put("tile-a", new SkinData("texture-value", "signature-value"));
+		}
 
-        try (SqliteSkinCache secondCache = new SqliteSkinCache(databasePath)) {
-            SkinData restored = secondCache.get("tile-a").orElseThrow();
-            assertEquals("texture-value", restored.textureBase64());
-            assertEquals("signature-value", restored.signature());
-            assertTrue(secondCache.get("missing").isEmpty());
-        }
-    }
+		try (SqliteSkinCache secondCache = new SqliteSkinCache(databasePath)) {
+			SkinData restored = secondCache.get("tile-a").orElseThrow();
+			assertEquals("texture-value", restored.textureBase64());
+			assertEquals("signature-value", restored.signature());
+			assertTrue(secondCache.get("missing").isEmpty());
+		}
+	}
 }

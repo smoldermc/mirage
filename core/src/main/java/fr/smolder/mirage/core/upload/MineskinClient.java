@@ -6,5 +6,5 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 public interface MineskinClient {
-    SkinData upload(String tileHash, BufferedImage skinImage) throws IOException, InterruptedException;
+	SkinData upload(String tileHash, BufferedImage skinImage) throws IOException, InterruptedException;
 }

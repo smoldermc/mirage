@@ -5,10 +5,10 @@ import fr.smolder.mirage.core.model.SkinData;
 import java.util.Optional;
 
 public interface SkinCache extends AutoCloseable {
-    Optional<SkinData> get(String tileHash);
+	Optional<SkinData> get(String tileHash);
 
-    void put(String tileHash, SkinData skinData);
+	void put(String tileHash, SkinData skinData);
 
-    default void close() {
-    }
+	default void close() {
+	}
 }

@@ -1,8 +1,3 @@
-import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.api.tasks.compile.JavaCompile
-import org.gradle.api.tasks.JavaExec
-import org.gradle.jvm.toolchain.JavaLanguageVersion
-
 dependencies {
     implementation(project(":mirage-core"))
     implementation(libs.adventure.text.minimessage)

@@ -1,8 +1,8 @@
 package fr.smolder.mirage.spigot;
 
+import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
 import fr.smolder.mirage.core.model.MotdRender;
 import fr.smolder.mirage.core.port.MotdController;
-import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;

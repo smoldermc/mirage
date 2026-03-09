@@ -5,9 +5,9 @@ import org.slf4j.Logger;
 import java.nio.file.Path;
 
 public interface PlatformAdapter {
-    Logger logger();
+	Logger logger();
 
-    MirageScheduler scheduler();
+	MirageScheduler scheduler();
 
-    Path dataDirectory();
+	Path dataDirectory();
 }
