@@ -6,6 +6,11 @@ Mirage is a multi-platform Minecraft MOTD renderer for Paper and Minestom.
 
 It slices an image into `8x8` tiles, uploads the generated skins through MineSkin, caches the texture payloads, and renders the result in the server list using modern player-head object components.
 
+---
+<img src="assets/example_motd_1.png" alt="Example Mirage MOTD 1" width="420" />
+<img src="assets/example_motd_2.png" alt="Example Mirage MOTD 2" width="420" />
+<img src="assets/example_motd_3.png" alt="Example Mirage MOTD 3" width="420" />
+
 ## Gradle
 
 Repository:
