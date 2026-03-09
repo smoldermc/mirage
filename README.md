@@ -1,3 +1,5 @@
+<img src="assets/mirage_banner.png" alt="Mirage Banner" width="420" />
+
 # Mirage
 
 Mirage is a multi-platform Minecraft MOTD renderer for Paper and Minestom.
